@@ -8,6 +8,6 @@
     <allow-intent href="https://*/*" />
     <preference name="Orientation" value="landscape" />
     <preference name="Fullscreen" value="true" />
-    <preference name="BackgroundColor" value="0xffffb3d1" />
+    <preference name="AndroidWindowSplashScreenBackground" value="#FFB3D1" />
     <preference name="android-minSdkVersion" value="24" />
 </widget>
