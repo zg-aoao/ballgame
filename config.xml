@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.example.ballgame" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>追光的小白球</name>
+    <description>观赏性弹球小游戏</description>
+    <author email="dev@example.com" href="https://example.com">dev</author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <preference name="Orientation" value="landscape" />
+    <preference name="Fullscreen" value="true" />
+    <preference name="AndroidWindowSplashScreenBackground" value="#FFB3D1" />
+    <preference name="android-minSdkVersion" value="24" />
+</widget>

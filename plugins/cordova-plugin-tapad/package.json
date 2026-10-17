@@ -1,0 +1,6 @@
+{
+  "name": "cordova-plugin-tapad",
+  "version": "1.0.0",
+  "description": "TapADN (Dirichlet ADN) 5.3.0.4 bridge for the ball game",
+  "cordova": { "id": "cordova-plugin-tapad", "platforms": ["android"] }
+}

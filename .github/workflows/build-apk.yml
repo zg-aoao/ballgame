@@ -1,0 +1,47 @@
+name: Build APK
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Prepare Android SDK (use the runner's preinstalled SDK)
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKM=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -n1)
+          echo "sdkmanager=$SDKM"
+          yes | $SDKM --licenses > /dev/null || true
+          $SDKM "platforms;android-34" "build-tools;34.0.0" || true
+      - name: Install Cordova
+        run: npm install -g cordova
+      - name: Check TapADN AAR
+        run: |
+          test -f plugins/cordova-plugin-tapad/src/android/libs/dirichlet_ad_5.3.0.4.aar || { echo "Missing dirichlet_ad_5.3.0.4.aar - put it in plugins/cordova-plugin-tapad/src/android/libs/"; exit 1; }
+      - name: Add Android platform
+        run: cordova platform add android@13.0.0
+      - name: Add TapADN plugin
+        run: cordova plugin add ./plugins/cordova-plugin-tapad
+      - name: Build debug APK
+        run: cordova build android --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ball-game-apk
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Ball Game build ${{ github.run_number }}
+          files: platforms/android/app/build/outputs/apk/debug/app-debug.apk

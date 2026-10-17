@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin id="cordova-plugin-tapad" version="1.0.0"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+  <name>TapAd</name>
+  <js-module name="TapAdBridge" src="www/tapad.js">
+    <clobbers target="TapAdBridge"/>
+  </js-module>
+  <platform name="android">
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="TapAd">
+        <param name="android-package" value="com.example.tapad.TapAdPlugin"/>
+      </feature>
+    </config-file>
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      <!-- 仅 APK 下载类广告需要 -->
+      <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    </config-file>
+    <source-file src="src/android/TapAdPlugin.java" target-dir="src/com/example/tapad"/>
+    <source-file src="src/android/TapAdPrivacy.java" target-dir="src/com/example/tapad"/>
+    <!-- AAR 请放在 src/android/libs/ 下，不要解压 -->
+    <lib-file src="src/android/libs/dirichlet_ad_5.3.0.4.aar"/>
+    <framework src="src/android/tapad.gradle" custom="true" type="gradleReference"/>
+  </platform>
+</plugin>
