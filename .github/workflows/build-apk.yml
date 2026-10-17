@@ -32,7 +32,12 @@ jobs:
       - name: Add Android platform
         run: cordova platform add android@13.0.0
       - name: Add TapADN plugin
-        run: cordova plugin add ./plugins/cordova-plugin-tapad
+        run: |
+          # 源码目录和 Cordova 自己的 plugins/ 安装目录同名会冲突，先拷到临时目录再安装
+          mkdir -p /tmp/tapad-src
+          cp -r plugins/cordova-plugin-tapad/. /tmp/tapad-src/
+          rm -rf plugins/cordova-plugin-tapad
+          cordova plugin add /tmp/tapad-src
       - name: Build debug APK
         run: cordova build android --debug
       - uses: actions/upload-artifact@v4
