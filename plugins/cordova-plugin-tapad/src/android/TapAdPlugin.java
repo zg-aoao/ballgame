@@ -97,6 +97,46 @@ public class TapAdPlugin extends CordovaPlugin {
         };
     }
 
+    private static int toInt(String s) {
+        try { return Integer.parseInt(s.trim()); } catch (Throwable t) { return 1; }
+    }
+
+    /**
+     * 激励视频交互监听：SDK 5.3.0.4 实际的回调签名与文档不同（回调带 TapRewardVideoAd 参数），
+     * 因此用动态代理实现接口，按方法名分发，不依赖具体参数个数。
+     * 是否发奖的唯一依据：onRewardVerify 的布尔参数为 true。
+     */
+    private TapRewardVideoAd.RewardAdInteractionListener rewardListener(final CallbackContext cb) {
+        return (TapRewardVideoAd.RewardAdInteractionListener) java.lang.reflect.Proxy.newProxyInstance(
+                TapRewardVideoAd.RewardAdInteractionListener.class.getClassLoader(),
+                new Class<?>[]{TapRewardVideoAd.RewardAdInteractionListener.class},
+                (proxy, method, args) -> {
+                    String n = method.getName();
+                    if ("hashCode".equals(n)) return System.identityHashCode(proxy);
+                    if ("equals".equals(n)) return args != null && args.length > 0 && proxy == args[0];
+                    if ("toString".equals(n)) return "TapAdRewardListener";
+                    switch (n) {
+                        case "onAdShow": emit(cb, "show", true); break;
+                        case "onAdClose": emit(cb, "close", false); break;
+                        case "onVideoComplete": emit(cb, "complete", true); break;
+                        case "onVideoError": emit(cb, "error", false, "msg", "video_error"); break;
+                        case "onRewardVerify": {
+                            boolean ok = false;
+                            if (args != null) for (Object o : args) { if (o instanceof Boolean) { ok = (Boolean) o; break; } }
+                            emit(cb, "verify", true, "ok", ok);
+                            break;
+                        }
+                        case "onSkippedVideo": emit(cb, "skip", true); break;
+                        case "onAdClick": emit(cb, "click", true); break;
+                        default: break;   // onAdValidShow 等不需要处理
+                    }
+                    Class<?> rt = method.getReturnType();
+                    if (rt == boolean.class) return false;
+                    if (rt == int.class) return 0;
+                    return null;
+                });
+    }
+
     private TapAdNative loader() {
         if (loader == null) loader = TapAdManager.get().createAdNative(cordova.getActivity());
         return loader;
@@ -139,7 +179,7 @@ public class TapAdPlugin extends CordovaPlugin {
                 if ("reward".equals(kind)) {
                     if (rewardAd != null || rewardLoading) { cb.success("busy"); return; }
                     rewardLoading = true;
-                    b.withRewardName(rewardName).withRewardAmount(rewardAmount).withUserId(userId);
+                    b.withRewardName(rewardName).withRewardAmount(toInt(rewardAmount)).withUserId(userId);
                     loader().loadRewardVideoAd(b.build(), new TapAdNative.RewardVideoAdListener() {
                         @Override public void onError(int code, String message) {
                             Log.e(TAG, "reward code=" + code + ", msg=" + message);
@@ -179,19 +219,7 @@ public class TapAdPlugin extends CordovaPlugin {
                     final TapRewardVideoAd ad = rewardAd;
                     if (ad == null) { emit(cb, "error", false, "msg", "not_ready"); return; }
                     rewardAd = null;                                   // 一次性，展示后立刻置空
-                    ad.setRewardAdInteractionListener(new TapRewardVideoAd.RewardAdInteractionListener() {
-                        @Override public void onAdShow() { emit(cb, "show", true); }
-                        @Override public void onAdClose() { emit(cb, "close", false); }
-                        @Override public void onVideoComplete() { emit(cb, "complete", true); }
-                        @Override public void onVideoError() { emit(cb, "error", false, "msg", "video_error"); }
-                        // 是否发奖的唯一依据：rewardVerify == true
-                        @Override public void onRewardVerify(boolean verify, int amount, String name, int code, String msg) {
-                            emit(cb, "verify", true, "ok", verify);
-                        }
-                        @Override public void onSkippedVideo() { emit(cb, "skip", true); }
-                        @Override public void onAdClick() { emit(cb, "click", true); }
-                        @Override public void onAdValidShow() { }
-                    });
+                    ad.setRewardAdInteractionListener(rewardListener(cb));
                     ad.showRewardVideoAd(cordova.getActivity());
                 } else {
                     final TapInterstitialAd ad = interAd;
