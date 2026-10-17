@@ -75,6 +75,28 @@ public class TapAdPlugin extends CordovaPlugin {
         throw new NoSuchMethodException(name);
     }
 
+    /**
+     * 隐私控制器（SDK 5.3.0.4 的 11 个布尔开关全部显式给出）。
+     * 小游戏不需要定位、设备状态、应用列表，因此关闭；其余保持官方默认。
+     * 用匿名类写法与官方示例一致；getTapAdLocation / getDevImei / getDevOaid 保持默认 null，不重写。
+     */
+    private TapAdCustomController privacy() {
+        return new TapAdCustomController() {
+            @Override public boolean isCanUseLocation() { return false; }
+            @Override public boolean isCanUsePhoneState() { return false; }
+            @Override public boolean isCanUseWifiState() { return true; }
+            @Override public boolean isCanUseWriteExternal() { return true; }
+            @Override public boolean alist() { return false; }
+            @Override public boolean isCanUseAndroidId() { return true; }
+            @Override public boolean isCanUseOaid() { return true; }
+            // 5.3.0.0 新增开关
+            @Override public boolean isCanUsePhoneMacAddress() { return true; }
+            @Override public boolean isCanUseBssid() { return true; }
+            @Override public boolean isCanUseSsid() { return true; }
+            @Override public boolean isCanUseSensor() { return true; }
+        };
+    }
+
     private TapAdNative loader() {
         if (loader == null) loader = TapAdManager.get().createAdNative(cordova.getActivity());
         return loader;
@@ -91,7 +113,7 @@ public class TapAdPlugin extends CordovaPlugin {
                  .withMediaKey(mediaKey)                      // TODO(MEDIA)
                  .enableDebug(debug)
                  .shakeEnabled(true)
-                 .withCustomController(new TapAdPrivacy());
+                 .withCustomController(privacy());
                 TapAdSdk.init(cordova.getActivity().getApplication(), b.build());
                 inited = true;
                 cb.success();
