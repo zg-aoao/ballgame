@@ -29,6 +29,33 @@ jobs:
       - name: Check TapADN AAR
         run: |
           test -f plugins/cordova-plugin-tapad/src/android/libs/dirichlet_ad_5.3.0.4.aar || { echo "Missing dirichlet_ad_5.3.0.4.aar - put it in plugins/cordova-plugin-tapad/src/android/libs/"; exit 1; }
+      - name: Restore release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "Missing signing secrets: KEYSTORE_BASE64 / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
+          python3 - <<'PY'
+          import json, os
+          cfg = {
+            "android": {
+              "release": {
+                "keystore": "release.keystore",
+                "storePassword": os.environ["KEYSTORE_PASSWORD"],
+                "alias": os.environ["KEY_ALIAS"],
+                "password": os.environ["KEY_PASSWORD"],
+                "keystoreType": ""
+              }
+            }
+          }
+          open("build.json", "w", encoding="utf-8").write(json.dumps(cfg))
+          PY
       - name: Add Android platform
         run: cordova platform add android@13.0.0
       - name: Add TapADN plugin
@@ -38,10 +65,11 @@ jobs:
           cp -r plugins/cordova-plugin-tapad/. /tmp/tapad-src/
           rm -rf plugins/cordova-plugin-tapad
           cordova plugin add /tmp/tapad-src
-      - name: Build debug APK
+      - name: Build release APK
         run: |
           set -o pipefail
-          cordova build android --debug 2>&1 | tee build.log
+          cordova build android --release --buildConfig=build.json -- --packageType=apk 2>&1 | tee build.log
+          ls -la platforms/android/app/build/outputs/apk/release/ || true
       - name: Show compile errors
         if: failure()
         run: |
@@ -52,13 +80,21 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           grep -n -B1 -A3 'error:' build.log | head -150 || true
+      - name: Locate APK
+        id: apk
+        run: |
+          APK=$(find platforms/android/app/build/outputs -name '*.apk' | head -n1)
+          test -n "$APK" || { echo "APK not found"; find platforms/android/app/build/outputs -type f; exit 1; }
+          cp "$APK" guangball-release.apk
+          echo "path=guangball-release.apk" >> "$GITHUB_OUTPUT"
+          ls -lh guangball-release.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: ball-game-apk
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          name: guangball-release-apk
+          path: guangball-release.apk
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Ball Game build ${{ github.run_number }}
-          files: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          files: guangball-release.apk

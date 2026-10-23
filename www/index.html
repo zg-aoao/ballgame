@@ -131,7 +131,6 @@ body[data-st=replay] #gear,body[data-st=replay] #ai{display:none}
 #logoBox{border:none;background:none;margin-bottom:10px}
 #logoBox:empty{display:none}
 #logoBox:empty::before{content:none}
-#sv.on,#rv.on,#rpl.on,#imp.on{animation-duration:.2s}
 #dfBox{display:flex;flex-direction:column;gap:6px}
 #dfHead{display:flex;justify-content:space-between;align-items:center;text-align:left}
 #dfHead b{font-weight:600;opacity:.8}
@@ -147,13 +146,20 @@ body[data-st=play] #dfBox{display:none}
 #set .pmb,.card .pmb{width:40px;height:40px;padding:0}
 .pmb svg{width:22px;height:22px}
 #pmRow{align-items:center;justify-content:space-between;margin-top:8px;font-size:13px}
+#dist{position:fixed;top:calc(10px + env(safe-area-inset-top));left:max(66px,calc(env(safe-area-inset-left) + 52px));height:40px;line-height:40px;z-index:4;color:#fff;font:600 16px/40px 'PingFang SC','Microsoft YaHei',sans-serif;letter-spacing:.06em;text-shadow:0 2px 8px rgba(150,30,90,.45);pointer-events:none;white-space:nowrap}
+body[data-st=play] #dist{left:max(114px,calc(env(safe-area-inset-left) + 100px))}
+body[data-st=menu] #dist,body[data-st=replay] #dist{display:none}
+#help{z-index:9}
+#help .guide{margin-top:10px;font-size:15px;line-height:1.85;color:#5a1038}
+#helpX{position:absolute;right:10px;top:10px;width:34px;height:34px;padding:0;border-radius:50%;background:#ffd3e6;color:#a02866;font-size:15px}
+#sv.on,#rv.on,#rpl.on,#imp.on,#help.on{animation-duration:.2s}
 </style>
 </head>
 <body data-st='menu'>
 <canvas id="c"></canvas>
 <button id="snd" title="sound"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z" stroke-width="1"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l5 6m0-6l-5 6"/></svg></button>
 <div id="start">追光的小白球<small>点击屏幕，开启声音并开始观赏</small></div>
-<button id='gear' title='菜单'><i></i><i></i><i></i></button><svg width='0' height='0' style='position:absolute'><defs><clipPath id='cl'><rect x='0' y='0' width='12' height='22'/></clipPath><clipPath id='cr'><rect x='12' y='0' width='12' height='22'/></clipPath></defs></svg><div id='hp'></div><button id='ai' title='AI'><svg class='ico' viewBox='0 0 24 24'><rect x='5' y='8' width='14' height='11' rx='3'/><path d='M12 8V5' fill='none'/><circle cx='12' cy='3.8' r='1.4'/><path d='M2.5 12.5v3M21.5 12.5v3' fill='none'/><circle cx='9.5' cy='13.2' r='1.6' fill='#ff8fbd' stroke='none'/><circle cx='14.5' cy='13.2' r='1.6' fill='#ff8fbd' stroke='none'/></svg></button>
+<button id='gear' title='菜单'><i></i><i></i><i></i></button><div id='dist'>0 m</div><svg width='0' height='0' style='position:absolute'><defs><clipPath id='cl'><rect x='0' y='0' width='12' height='22'/></clipPath><clipPath id='cr'><rect x='12' y='0' width='12' height='22'/></clipPath></defs></svg><div id='hp'></div><button id='ai' title='AI'><svg class='ico' viewBox='0 0 24 24'><rect x='5' y='8' width='14' height='11' rx='3'/><path d='M12 8V5' fill='none'/><circle cx='12' cy='3.8' r='1.4'/><path d='M2.5 12.5v3M21.5 12.5v3' fill='none'/><circle cx='9.5' cy='13.2' r='1.6' fill='#ff8fbd' stroke='none'/><circle cx='14.5' cy='13.2' r='1.6' fill='#ff8fbd' stroke='none'/></svg></button>
 <div id='menu' class='ov on'><div id='logoBox'><img id='logo' src='logo.png' alt='' onerror="this.remove()"></div><div class='big' style='font-size:56px'>追光的小白球</div><div class='sub'>一场没有终点的奔逃</div><div class='col'><button id='mPlay'>开始游戏</button><button id='mStory'>导入故事 / 音乐</button></div><div class='tip'>健康游戏忠告：抗制不良游戏，拒绝盗版游戏。注意自我保护，谨防受骗上当。适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。</div></div>
 
 <div id='over' class='ov'><button class='svb' title='保存回放'><svg viewBox='0 0 24 24' width='20' height='20'><path d='M5 3h11l3 3v15H5zM8 3v6h8V3M8 21v-7h8v7' fill='none' stroke='currentColor' stroke-width='2' stroke-linejoin='round'/></svg></button><div class='big' style='font-size:52px'>游戏结束</div><div class='sub' id='ovWhy'></div><div class='col'><button id='oRe'>重新开始</button><button id='oMenu'>返回主菜单</button></div></div>
@@ -161,9 +167,10 @@ body[data-st=play] #dfBox{display:none}
 <div id='sv' class='ov'><div class='card' style='text-align:center;width:min(320px,82vw)'><div class='t' id='svT'>保留回放？</div><div id='svM' style='margin:8px 0 14px;font-size:14px;line-height:1.7'>保存最近一段游戏过程，之后可在左上角菜单的“查看回放”里观看。</div><div class='row' id='svAsk' style='justify-content:center'><button id='svYes'>保留</button><button id='svNo'>取消</button></div><button id='svOk' style='display:none'>好的</button></div></div>
 <div id='rpl' class='ov'><div class='card' style='position:relative;width:min(460px,92vw)'><button id='rplX' title='关闭'>✕</button><div class='t'>回放记录</div><div id='rplL'></div></div></div>
 <div id='rpbar'><button id='rpP'>⏸</button><div class='rpbg'><i id='rpB'></i></div><button id='rpX'>✕</button></div>
-<div id='ad' class='ov'><div class='adtag'>广告 · 示例</div><button id='adX'>✕</button><div class='adpic'>🎬</div><div id='adT'>广告加载中…</div><div class='adbar'><i id='adB'></i></div><button id='adGet' disabled>领取奖励</button></div>
-<aside id='set'><button class='gb' id='pCon'>继续游戏</button><button class='gb' id='pRe'>重新开始</button><button class='gb' id='pMenu'>返回主菜单</button><label class='srow'>音效<input type='checkbox' id='sSfx'></label><label class='srow'>背景音乐音量<input type='range' id='sVol' min='0' max='100'></label><label class='srow'>嘶吼音量<input type='range' id='sRoar' min='0' max='100'></label><div id='dfBox'><button id='dfHead'><b id='dfVal'>普通</b><i>▾</i></button><div id='dfList'><button data-d='0'>简单</button><button data-d='1'>普通</button><button data-d='2'>困难</button><button data-d='3'>噩梦</button></div></div><label class='srow'>画面震动与闪烁<input type='checkbox' id='sShk'></label><button id='sStory'>导入故事 / 音乐</button><button id='sRpl'>查看回放</button></aside>
-<div id='agr' class='ov'><div class='t' style='font-size:20px;font-weight:700;margin-bottom:6px'>用户协议与防沉迷须知</div><div id='agS' class='sub' style='margin:0 0 8px;letter-spacing:.05em;font-size:13px'></div><div class='doc'><p><b>一、协议的接受</b><br>下载、安装或使用本游戏，即表示您已阅读并同意本协议。</p><p><b>二、服务说明</b><br>本游戏为单机休闲游戏，免费提供。我们可能更新或调整内容。</p><p><b>三、用户行为</b><br>请勿对本游戏进行破解、篡改、倒卖，或用于违法用途。</p><p><b>四、广告说明</b><br>游戏中含激励广告示例。观看广告完全自愿，不观看不影响基本游玩，仅用于获得一次复活机会。当前为倒计时模拟，接入真实广告 SDK 后将展示真实广告。</p><p><b>五、个人信息与隐私</b><br>本游戏不收集您的姓名、身份证号、手机号等个人信息。年龄声明、设置、自定义故事和背景音乐仅保存在您的设备本地，不会上传。</p><p><b>六、未成年人保护与防沉迷</b><br>依据国家新闻出版署《关于进一步严格管理 切实防止未成年人沉迷网络游戏的通知》，未成年人仅可在周五、周六、周日和法定节假日每日 20:00–21:00 游玩。本游戏按设备时间，限制未成年人在周五至周日 20:00–21:00 以外游玩（法定节假日暂未自动识别）。所有玩家连续游戏满 60 分钟会收到休息提醒。年龄由您自行选择，本游戏未接入公安实名认证；请监护人协助监督。</p><p><b>七、免责声明</b><br>因设备、系统或网络原因造成的数据丢失或无法使用，我们在法律允许范围内不承担责任。</p><p><b>八、协议变更与联系</b><br>我们可能修订本协议，继续使用即视为接受。联系方式：【待填写】。</p><p style='opacity:.65'>本协议为示例模板，正式发布前请由专业人士审核，并替换为实际运营主体信息。</p></div><div class='row' style='margin-top:12px'><button id='agA'>同意 · 我已年满18周岁</button><button id='agM'>同意 · 我未满18周岁</button><button id='agX'>关闭</button></div></div>
+<div id='ad' class='ov'><div class='adtag'>广告</div><button id='adX'>✕</button><div class='adpic'>🎬</div><div id='adT'>广告加载中…</div><div class='adbar'><i id='adB'></i></div><button id='adGet' disabled>领取奖励</button></div>
+<aside id='set'><button class='gb' id='pCon'>继续游戏</button><button class='gb' id='pRe'>重新开始</button><button class='gb' id='pMenu'>返回主菜单</button><label class='srow'>音效<input type='checkbox' id='sSfx'></label><label class='srow'>背景音乐音量<input type='range' id='sVol' min='0' max='100'></label><label class='srow'>嘶吼音量<input type='range' id='sRoar' min='0' max='100'></label><div id='dfBox'><button id='dfHead'><b id='dfVal'>普通</b><i>▾</i></button><div id='dfList'><button data-d='0'>简单</button><button data-d='1'>普通</button><button data-d='2'>困难</button><button data-d='3'>噩梦</button></div></div><label class='srow'>画面震动与闪烁<input type='checkbox' id='sShk'></label><button id='sHelp'>操作指南</button><button id='sStory'>导入故事 / 音乐</button><button id='sRpl'>查看回放</button><button id='sAgr' style='background:#fff3c9;color:#a07028'>关于与用户协议</button><div style='font-size:11px;opacity:.6;text-align:center;line-height:1.6;margin-top:6px'>版本 1.0.0<br>烬点工作室<br>蜀ICP备2026064450号-1A</div></aside>
+<div id='help' class='ov'><div class='card' style='position:relative;width:min(400px,90vw)'><button id='helpX' title='关闭'>✕</button><div class='t'>操作指南</div><div class='guide'>左右滑动屏幕移动木板。屏幕左侧1/4部分，点击上方木板换至底部，点击下方木板换至上方</div></div></div>
+<div id='agr' class='ov'><div class='t' style='font-size:20px;font-weight:700;margin-bottom:6px'>用户协议</div><div id='agS' class='sub' style='margin:0 0 8px;letter-spacing:.05em;font-size:13px'></div><div class='doc'><p><b>一、协议的接受</b><br>下载、安装或使用本游戏，即表示您已阅读并同意本协议。</p><p><b>二、服务说明</b><br>本游戏为单机休闲游戏，免费提供。我们可能更新或调整内容。</p><p><b>三、用户行为</b><br>请勿对本游戏进行破解、篡改、倒卖，或用于违法用途。</p><p><b>四、广告说明</b><br>游戏中含广告（含激励视频等）。观看广告完全自愿，不观看不影响基本游玩，激励广告仅用于获得一次复活等可选收益。本游戏不提供内购支付。</p><p><b>五、个人信息与隐私</b><br>游戏设置、自定义故事和背景音乐保存在您的设备本地。为展示广告，在您同意本协议后，广告服务可能根据其隐私政策收集设备相关信息；请以广告服务商公示的隐私政策为准。</p><p><b>六、未成年人保护</b><br>未成年人保护与防沉迷由发行/运行平台按规定执行。请监护人履行监护职责，合理安排游戏时间。连续游戏满 60 分钟时，本游戏会提示休息。</p><p><b>七、免责声明</b><br>因设备、系统或网络原因造成的数据丢失或无法使用，我们在法律允许范围内不承担责任。</p><p><b>八、运营主体与备案</b><br>运营主体：烬点工作室（邱望香）<br>ICP备案号：蜀ICP备2026064450号-1A<br>联系邮箱：3203079315@qq.com</p></div><div class='row' style='margin-top:12px'><button id='agA'>同意并继续</button><button id='agX'>关闭</button></div></div>
 <div id='ntc' class='ov'><div class='card' style='text-align:center'><div class='t'>温馨提示</div><div id='ntcT' style='margin:10px 0 14px;line-height:1.7'></div><button id='ntcOk'>知道了</button></div></div>
 <button id='book' title='导入故事'>📖</button>
 <div id='end' class='ov'><button class='svb' title='保存回放'><svg viewBox='0 0 24 24' width='20' height='20'><path d='M5 3h11l3 3v15H5zM8 3v6h8V3M8 21v-7h8v7' fill='none' stroke='currentColor' stroke-width='2' stroke-linejoin='round'/></svg></button><div class='big'>终</div><div class='sub'>故事讲完了</div><div class='row'><button id='again'>重新开始</button><button id='eMenu'>返回主菜单</button></div></div>
@@ -183,8 +190,9 @@ function segGen(x){let l=SEG[SEG.length-1];while(l.b<x+3000&&l.b<endX+200){const
 function segAt(x){segGen(x);for(const s of SEG)if(s.b>=x)return s;return SEG[SEG.length-1]}
 const gyN=x=>{const s=segAt(x);return x>=s.a&&x<=s.b?s.y+s.s*(x-(s.a+s.b)/2):null};
 const sy=x=>H-215+20*Math.sin(x*.0017),gs=x=>(sy(x+2)-sy(x-2))/4;
-let W,sc;
-function rs(){const d=Math.min(devicePixelRatio||1,2);cv.width=innerWidth*d;cv.height=innerHeight*d;sc=cv.height/H;W=cv.width/sc}
+let W,sc,storyFs={},bgGrad=null,bgHue=-999,sunGrad=null;
+const mobileGfx=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1);
+function rs(){const d=Math.min(devicePixelRatio||1,mobileGfx?1.5:2);cv.width=innerWidth*d;cv.height=innerHeight*d;sc=cv.height/H;W=cv.width/sc;storyFs={};bgGrad=null;sunGrad=null}
 addEventListener('resize',rs);rs();
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
@@ -277,7 +285,7 @@ const DEFSTORY=STORY.slice();
 function buildStory(text){const S=[];for(const p of text.split(/\n+/).map(s=>s.trim()).filter(Boolean)){S.push(...splitStory(p));S.push('')}while(S.length&&!S[S.length-1])S.pop();return S}
 let endX=0,ended=false,endT=0;
 function computeEnd(){endX=(650+(Math.max(1,STORY.length)-1)*900)/.85+60}
-function setStory(arr){STORY.length=0;STORY.push(...(arr.length?arr:DEFSTORY));computeEnd()}
+function setStory(arr){STORY.length=0;STORY.push(...(arr.length?arr:DEFSTORY));computeEnd();storyFs={}}
 try{const t=localStorage.getItem('ballstory');if(t)setStory(buildStory(t))}catch(e){}
 computeEnd();
 let ball,pad,boss,obs,parts,trail,cam,shake,combo,time,genX;
@@ -323,12 +331,16 @@ function spawn(){
   for(let i=0;i<extra;i++)spawn1(genX+rnd(-100,200));       // 难度越高，同一处聚集的障碍越多
   genX+=(rnd(280,460)+(o.w||60))*d.sp;
 }
-function clearPath(x0,y0,vx,vy){
-  const T=2*-vy/G;
-  for(let t=.03;t<T;t+=.035){
+/* 实心障碍缓存：AI 路径检测只关心方块/石柱/平台，避免每帧反复扫弹射圈与小怪 */
+let solidObs=[];
+function refreshSolid(){solidObs.length=0;for(const o of obs)if(!o.dead&&!o.r)solidObs.push(o)}
+function clearPath(x0,y0,vx,vy,step){
+  const T=2*-vy/G,ds=step||.05,list=solidObs,xA=x0,xB=x0+vx*T,lo=Math.min(xA,xB)-160,hi=Math.max(xA,xB)+160;
+  for(let t=.04;t<T;t+=ds){
     const px=x0+vx*t,py=y0+vy*t+.5*G*t*t;
-    for(const o of obs){
-      if(o.r||o.x>px+150||o.x+o.w<px-150)continue;
+    for(let i=0,n=list.length;i<n;i++){
+      const o=list[i];
+      if(o.x>hi||o.x+o.w<lo||o.x>px+150||o.x+o.w<px-150)continue;
       if(px>o.x-R-4&&px<o.x+o.w+R+4&&py>o.y-R-4&&py<o.y+o.h+R+4)return false;
     }
   }
@@ -342,9 +354,14 @@ function launch(){
     c.push({vx:state==='play'&&!aiOn?SCROLL:D/T,vy:-Math.sqrt(2*G*hh)});
   }
   if(aiG)for(let i=0;i<20;i++){const h=250+(i%5)*40+rnd(-8,8),D=20+Math.floor(i/5)*55+rnd(-8,8),hh=h+dy,T=2*Math.sqrt(2*hh/G);c.push({vx:D/T,vy:-Math.sqrt(2*G*hh)})}
-  const ok=c.filter(a=>clearPath(x0,y0,a.vx,a.vy));
-  const aiMode=aiOn||state!=='play',hi=aiMode&&!ok.length?c.filter(a=>a.vy*a.vy/(2*G)>=y0-(TOPY+14+R)):[];
-  if(aiMode)ok.sort((a,b)=>(b.vx*-b.vy)-(a.vx*-a.vy));   // 托管优先选前进更远的弧线
+  refreshSolid();
+  /* 托管：先按“前进更远”排序再检测，凑够候选就早停，避免 100+ 次全量 clearPath */
+  if(aiG)c.sort((a,b)=>(b.vx*-b.vy)-(a.vx*-a.vy));
+  const ok=[];
+  for(let i=0;i<c.length;i++){
+    if(clearPath(x0,y0,c[i].vx,c[i].vy,.055)){ok.push(c[i]);if(aiG&&ok.length>=14)break}
+  }
+  const aiMode=aiG,hi=aiMode&&!ok.length?c.filter(a=>a.vy*a.vy/(2*G)>=y0-(TOPY+14+R)):[];
   let p=(ok.length&&(aiMode||Math.random()>.12))?ok[Math.random()*(aiMode?Math.ceil(ok.length/2):ok.length)|0]:(hi.length?hi[Math.random()*hi.length|0]:c[Math.random()*c.length|0]);
   if(aiMode){
     if(p.vx<150)aiLoop++;else aiLoop=0;
@@ -366,6 +383,8 @@ function predict(){
   return x1;
 }
 function burst(x,y,n,col,boost){
+  if(parts.length>=100)return;
+  n=Math.min(n,100-parts.length);
   for(let i=0;i<n;i++)parts.push({x,y,vx:rnd(-150,350)+boost,vy:rnd(-520,-40),l:1,s:rnd(4,12),r:rnd(0,6),c:col});
 }
 function shatter(o){
@@ -425,6 +444,7 @@ function step(dt){
     else if(o.t==='f'){o.x=o.ox+Math.sin(time*1.1+o.ph)*45;o.y=o.oy+Math.sin(time*2.2+o.ph)*35}
   }
   // paddle (autonomous)
+  if(aiOn||state!=='play')refreshSolid();
   const tgt=predict()+pad.aim,tc=Math.max(predT,.03);
   if(aiOn||state!=='play'){const sp=aiLogic(tgt,tc,dt);if(sp>0)pad.x+=clamp((tgt-pad.x)*Math.min(1,dt/tc),-sp*dt,sp*dt)}
   else{pad.x+=keyDir*950*dt+pendDx+camV*dt;pendDx=0}
@@ -481,8 +501,9 @@ function step(dt){
 /* ---------- draw ---------- */
 function hills(par,base,amp,col,f){
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(0,H);
-  for(let x=0;x<=W+20;x+=20){const u=(x+cam*par)*f;ctx.lineTo(x,base-amp*(Math.sin(u)+.5*Math.sin(u*2.3+2)))}
-  ctx.lineTo(W+20,H);ctx.fill();
+  const step=mobileGfx?32:20;
+  for(let x=0;x<=W+step;x+=step){const u=(x+cam*par)*f;ctx.lineTo(x,base-amp*(Math.sin(u)+.5*Math.sin(u*2.3+2)))}
+  ctx.lineTo(W+step,H);ctx.fill();
 }
 function jaw(s,ang,st,big){
   ctx.save();ctx.rotate(s*ang);ctx.beginPath();
@@ -508,16 +529,17 @@ function draw(){
   ctx.setTransform(1,0,0,1,0,0);
   ctx.scale(sc,sc);
   const hue=Math.sin(time*.05)*10;
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,`hsl(${340+hue},100%,96%)`);g.addColorStop(.55,`hsl(${332+hue},95%,90%)`);g.addColorStop(1,`hsl(${318+hue},80%,82%)`);
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  if(!bgGrad||Math.abs(hue-bgHue)>1.2){
+    bgHue=hue;bgGrad=ctx.createLinearGradient(0,0,0,H);
+    bgGrad.addColorStop(0,`hsl(${340+hue},100%,96%)`);bgGrad.addColorStop(.55,`hsl(${332+hue},95%,90%)`);bgGrad.addColorStop(1,`hsl(${318+hue},80%,82%)`);
+  }
+  ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
   ctx.save();
-  ctx.translate(rnd(-1,1)*shake*SET.shk,rnd(-1,1)*shake*SET.shk);
+  if(shake*SET.shk>0.05)ctx.translate(rnd(-1,1)*shake*SET.shk,rnd(-1,1)*shake*SET.shk);
   // sun & bokeh
-  const sg=ctx.createRadialGradient(W*.72,170,10,W*.72,170,130);
-  sg.addColorStop(0,'rgba(255,255,255,.75)');sg.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=sg;ctx.fillRect(W*.72-140,30,280,280);
-  for(let i=0;i<12;i++){
+  if(!sunGrad){sunGrad=ctx.createRadialGradient(W*.72,170,10,W*.72,170,130);sunGrad.addColorStop(0,'rgba(255,255,255,.75)');sunGrad.addColorStop(1,'rgba(255,255,255,0)')}
+  ctx.fillStyle=sunGrad;ctx.fillRect(W*.72-140,30,280,280);
+  for(let i=0,n=mobileGfx?7:12;i<n;i++){
     const m=W+200,x=(((i*337-cam*.3)%m)+m)%m-100,y=(i*97)%480+40;
     ctx.fillStyle='rgba(255,255,255,.13)';ctx.beginPath();ctx.arc(x,y+Math.sin(time*.5+i)*8,10+(i%5)*8,0,7);ctx.fill();
   }
@@ -530,10 +552,10 @@ function draw(){
   for(let i=Math.max(0,Math.floor((cam*p-300)/sp));i<=Math.floor((cam*p+W)/sp);i++){
     const tx=650+i*sp-cam*p,al=clamp(Math.min(tx,W-tx)/220,0,1);
     const sT=(STORY[i]||'').replace(/[，。；！？、,.;!?：:]+$/,'');if(!sT)continue;
-    ctx.font='600 36px "PingFang SC","Noto Serif SC","Microsoft YaHei",serif';
-    const fs=Math.min(36,36*W*.9/ctx.measureText(sT).width);
+    let fs=storyFs[i];
+    if(fs==null){ctx.font='600 36px "PingFang SC","Noto Serif SC","Microsoft YaHei",serif';fs=storyFs[i]=Math.min(36,36*W*.9/Math.max(1,ctx.measureText(sT).width))}
     ctx.font=`600 ${fs}px "PingFang SC","Noto Serif SC","Microsoft YaHei",serif`;
-    ctx.globalAlpha=al*.95;ctx.fillStyle='#000';ctx.shadowColor='rgba(255,255,255,.8)';ctx.shadowBlur=10;
+    ctx.globalAlpha=al*.95;ctx.fillStyle='#000';ctx.shadowColor='rgba(255,255,255,.8)';ctx.shadowBlur=mobileGfx?6:10;
     ctx.fillText(sT,tx,H/2+12);
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;
@@ -599,14 +621,13 @@ function draw(){
   drawBoss();
   ctx.restore();
   if(boss.dark>.003){ctx.fillStyle='rgba(60,0,40,'+(boss.dark*(.1+.05*Math.sin(time*30)*SET.shk))+')';ctx.fillRect(0,0,W,H)}
-  // hud
-  ctx.textAlign='left';ctx.font='600 16px "PingFang SC","Microsoft YaHei",sans-serif';
-  try{ctx.letterSpacing='2px'}catch(e){}
-  ctx.fillStyle='rgba(255,255,255,.9)';ctx.shadowColor='rgba(150,30,90,.35)';ctx.shadowBlur=6;
-  if(state!=='menu')ctx.fillText(Math.floor(Math.max(0,ball.x-200)/50)+' m',66,34);ctx.shadowBlur=0;
+  if(state!=='menu'&&state!=='replay'){
+    const t=Math.floor(Math.max(0,ball.x-200)/50)+' m';
+    if($('dist').textContent!==t)$('dist').textContent=t;
+  }
 }
 const $=id=>document.getElementById(id);
-function restart(){SEG.length=0;SEG.push({a:-600,b:1000,y:H-100,s:0});init();ended=false;endT=0;padTop=false;padBot=false;topY=TOPY;aiPlan=null;aiAvoid=null;aiLoop=0;trapHits=[];hp=4;inv=0;shield=0;reviveUsed=false;setHp();$('end').classList.remove('on');$('over').classList.remove('on');$('rv').classList.remove('on')}
+function restart(){SEG.length=0;SEG.push({a:-600,b:1000,y:H-100,s:0});init();ended=false;endT=0;padTop=false;padBot=false;topY=TOPY;aiPlan=null;aiAvoid=null;aiLoop=0;aiThinkT=0;trapHits=[];solidObs.length=0;storyFs={};hp=4;inv=0;shield=0;reviveUsed=false;setHp();$('end').classList.remove('on');$('over').classList.remove('on');$('rv').classList.remove('on')}
 function showEnd(){shake=0;$('end').classList.add('on');tone(523,1.4,'sine',.2);tone(659,1.6,'sine',.15);tone(784,2,'sine',.15)}
 function openImp(){$('imp').classList.add('on');renderImp()}
 $('book').onclick=e=>{e.stopPropagation();openImp()};
@@ -652,17 +673,15 @@ async function bgmLoad(){
     };
   }catch(e){}
 }
-/* ---- game flow, settings, ads, anti-addiction ---- */
+/* ---- game flow, settings, ads ---- */
 let camV=0,padTop=false,padBot=false,shield=0;const SCROLL=340,TOPY=170,BOTY=H-20;let topY=TOPY;const padY=x=>padTop?topY:padBot?BOTY:sy(x);
 let state='menu',paused=false,aiOn=true,hp=4,inv=0,reviveUsed=false,playSec=0,keyDir=0,pendDx=0,lastX=null,ntcCb=null;
 let SET={sfx:true,vol:50,shk:1,roar:60,diff:1,pm:0};
 try{Object.assign(SET,JSON.parse(localStorage.getItem('ballset')||'{}'))}catch(e){}
 let prof={};try{prof=JSON.parse(localStorage.getItem('ballprof')||'{}')}catch(e){}
-const AA={days:[5,6,0],from:20,to:21};
 function saveSet(){try{localStorage.setItem('ballset',JSON.stringify(SET))}catch(e){}}
 function saveProf(){try{localStorage.setItem('ballprof',JSON.stringify(prof))}catch(e){}}
 function applySfx(){if(master)master.gain.value=(muted||!SET.sfx)?0:.5}
-function minorOk(){const d=new Date(),h=d.getHours();return AA.days.includes(d.getDay())&&h>=AA.from&&h<AA.to}
 const HEART_PATH='M12 20.5C5.2 14.8 1.8 11.5 1.8 7.4 1.8 4.3 4.1 2 7 2c2 0 3.9 1 5 2.7C13.1 3 15 2 17 2c2.9 0 5.2 2.3 5.2 5.4 0 4.1-3.4 7.4-10.2 13.1z';
 let prevHp=4;
 const BRK="<span class='hbk'><svg class='f hl' viewBox='0 0 24 22'><path clip-path='url(#cl)' d='"+HEART_PATH+"'/></svg><svg class='f hr' viewBox='0 0 24 22'><path clip-path='url(#cr)' d='"+HEART_PATH+"'/></svg><i></i><i></i><i></i><i></i><i></i></span>";
@@ -679,14 +698,12 @@ function setHp(){
 function syncUi(){document.body.dataset.st=state;$('ai').classList.toggle('on',aiOn)}
 function showNtc(msg,cb){$('ntcT').textContent=msg;ntcCb=cb||null;$('ntc').classList.add('on')}
 $('ntcOk').onclick=()=>{$('ntc').classList.remove('on');const f=ntcCb;ntcCb=null;if(f)f()};
-function openAgr(){$('agX').style.display=prof.agreed?'':'none';$('agS').textContent=prof.agreed?'当前年龄声明：'+(prof.minor?'未满18周岁':'已满18周岁'):'请先阅读并同意以下协议，并选择您的年龄情况。';$('agr').classList.add('on')}
-$('agA').onclick=()=>{prof={agreed:1,minor:0};saveProf();$('agr').classList.remove('on');adInit()};
-$('agM').onclick=()=>{prof={agreed:1,minor:1};saveProf();$('agr').classList.remove('on');adInit()};
+function openAgr(){$('agX').style.display=prof.agreed?'':'none';$('agA').style.display=prof.agreed?'none':'';$('agS').textContent=prof.agreed?'您已同意本协议，可随时再次查阅。':'请先阅读并同意以下协议后继续。';$('agr').classList.add('on')}
+$('agA').onclick=()=>{prof={agreed:1};saveProf();$('agr').classList.remove('on');adInit()};
 $('agX').onclick=()=>$('agr').classList.remove('on');
 function begin(){restart();rec.length=0;recN=0;recAcc=0;savedMark=-1;state='play';paused=false;playSec=0;camV=aiOn?0:SCROLL;if(!aiOn){ball.vx=SCROLL;pad.x=ball.x}$('set').classList.remove('on');$('menu').classList.remove('on');syncUi();applyBgm()}
 function startGame(auto){
   if(!prof.agreed){openAgr();return}
-  if(prof.minor&&!minorOk()){showNtc('根据国家新闻出版署规定，未成年人仅可在周五、周六、周日 20:00–21:00 游玩。当前不在可玩时段，请稍后再来。');return}
   initAudio();if(AC.resume)AC.resume();applySfx();started=true;
   aiOn=!!auto;begin();
 }
@@ -759,6 +776,10 @@ $('pCon').onclick=()=>setPause(false);
 $('pRe').onclick=()=>{setPause(false);begin()};
 $('pMenu').onclick=()=>toMenu();
 $('ai').onclick=()=>{aiOn=!aiOn;padTop=false;padBot=false;syncUi()};
+$('sHelp').onclick=()=>{$('set').classList.remove('on');$('help').classList.add('on')};
+$('helpX').onclick=()=>$('help').classList.remove('on');
+$('help').onclick=e=>{if(e.target===$('help'))$('help').classList.remove('on')};
+$('sAgr').onclick=()=>{$('set').classList.remove('on');openAgr()};
 $('sStory').onclick=()=>{$('set').classList.remove('on');openImp()};
 $('sSfx').checked=SET.sfx;$('sVol').value=SET.vol;$('sShk').checked=!!SET.shk;
 $('sSfx').onchange=e=>{SET.sfx=e.target.checked;applySfx();saveSet()};
@@ -796,7 +817,6 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(tr
 setInterval(()=>{
   if(state!=='play'||paused)return;
   playSec++;
-  if(prof.minor&&!minorOk()){toMenu();showNtc('未成年人游戏时段已结束（周五、周六、周日 20:00–21:00）。请注意休息，下次再来。');return}
   if(playSec%3600===0){paused=true;if(AC)AC.suspend();applyBgm();showNtc('您已连续游戏 60 分钟，请注意休息，保护视力。',()=>{paused=false;if(AC)AC.resume();applyBgm()})}
 },1000);
 setHp();syncUi();if(!prof.agreed)openAgr();
@@ -858,8 +878,8 @@ $('impT').onchange=()=>{
 };
 $('impX').onclick=()=>{$('imp').classList.remove('on');pend=null;$('impC').style.display='none';impMsg('');applyBgm()};
 /* ---- AI 托管升级：赶不到预计落点时，落点下有地面就让球落地弹起；是悬崖就把木板切到上方把球往下弹 ---- */
-let aiTopT=0;
-const AI_SPEED=6000;
+let aiTopT=0,aiThinkT=0;
+const AI_SPEED=6000,AI_THINK=.08;   // catchBad 约 12Hz；木板追随与上板预判仍每帧
 let aiTip={t:0,s:''},aiPlan=null,aiTopX=0,aiAvoid=null,aiTopVx=300,trapHits=[],aiLoop=0;
 /* 小球被夹在障碍之间反复弹：1.6 秒内连续撞到 4 次以上，就把相关的障碍击碎并给球一个向前的速度 */
 function trapNote(o){
@@ -871,15 +891,18 @@ function trapNote(o){
 }
 /* 把从 (x,y) 以 (vx,vy) 出发的轨迹上挡路的障碍击碎（最多 4 个） */
 function breakAhead(x,y,vx,vy){
-  for(let i=0;i<4;i++){const h=pathHit(x,y,vx,vy,1.6);if(!h||!h.o)break;h.o.dead=1;shatter(h.o)}
+  if(!solidObs.length)refreshSolid();
+  for(let i=0;i<4;i++){const h=pathHit(x,y,vx,vy,1.6);if(!h||!h.o)break;h.o.dead=1;shatter(h.o);refreshSolid()}
 }
 /* 沿当前轨迹预测：球在到达木板高度之前会不会撞上障碍（只看方块/石柱/平台，弹射圈和小怪不算）；sh 为判定范围缩小量 */
 function pathHit(x,y,vx,vy,tMax,sh){
-  const m=R-(sh||0);
-  for(let t=.03;t<tMax;t+=.03){
+  const m=R-(sh||0),list=solidObs.length?solidObs:obs,ds=tMax>1.2?.055:.042;
+  const xB=x+vx*tMax,lo=Math.min(x,xB)-170,hiX=Math.max(x,xB)+170;
+  for(let t=.04;t<tMax;t+=ds){
     const px=x+vx*t,py=y+vy*t+.5*G*t*t;
-    for(const o of obs){
-      if(o.dead||o.r||o.x>px+160||o.x+o.w<px-160)continue;
+    for(let i=0,n=list.length;i<n;i++){
+      const o=list[i];
+      if(o.dead||o.r||o.x>hiX||o.x+o.w<lo||o.x>px+160||o.x+o.w<px-160)continue;
       if(px>o.x-m&&px<o.x+o.w+m&&py>o.y-m&&py<o.y+o.h+m)return{t,x:px,y:py,o};
     }
   }
@@ -892,11 +915,12 @@ function topDescentClear(xT,yT,vx2){
   const ps=sy(xT)-R,t2=(-640+Math.sqrt(640*640+2*G*Math.max(0,ps-yT)))/G;
   return !pathHit(xT,yT,vx2,640,t2+.05);
 }
-/* 在 (xl,y0) 接住球后，是不是死路：所有发射弧线（含近乎垂直的高弧）都会撞障碍 */
+/* 在 (xl,y0) 接住球后，是不是死路：覆盖原有高度/距离组合，优先试更常见的中等弧线以便早停 */
 function catchBad(xl,y0){
-  for(const h of[120,180,240,300,360,430])for(const D of[40,100,160,220,280,340,400,460,520]){
-    const T=2*Math.sqrt(2*h/G);
-    if(clearPath(xl,y0,D/T,-Math.sqrt(2*G*h)))return false;
+  const hs=[240,300,180,360,120,430],Ds=[280,340,220,400,160,460,100,520,40];
+  for(let a=0;a<hs.length;a++)for(let b=0;b<Ds.length;b++){
+    const h=hs[a],D=Ds[b],T=2*Math.sqrt(2*h/G);
+    if(clearPath(xl,y0,D/T,-Math.sqrt(2*G*h),.07))return false;
   }
   return true;
 }
@@ -912,7 +936,7 @@ function plateX(){
 /* 球不被接住、直接落到地面弹起，那一段弹跳路线是否畅通 */
 /* 沿当前轨迹推算球落到地面的位置；落点下没有地面则返回 null（会掉下悬崖） */
 function groundContact(){
-  for(let t=0;t<2.5;t+=.02){
+  for(let t=0;t<2.5;t+=.04){
     const px=ball.x+ball.vx*t,py=ball.y+ball.vy*t+.5*G*t*t,g=gyN(px);
     if(g!==null&&py+R>=g&&ball.vy+G*t>0)return{x:px,y:g};
     if(py>H+150)return null;
@@ -970,11 +994,19 @@ function aiLogic(tgt,tc,dt){
     else return 0;
   }
   if(ball.y>=sy(ball.x)-R-4)return AI_SPEED;                    // 球已在木板高度附近：正常接
-  if(ball.vy>0&&tc>.15&&ball.y<sy(ball.x)-R-30){                // 方案三：落点旁有障碍、接住是死路，而落地弹跳能过去 → 木板让开
-    const xl=tgt-pad.aim,gc=groundContact();
-    if(gc&&trapNear(xl)&&catchBad(xl,sy(xl)-R)&&groundHopClear(gc,ball.vx)){
-      const net=!edgeOk(gc.x,40);                               // 落地点靠近地块边缘时才放出底板托底
-      aiAvoid={x:xl-170,net,t:0};padBot=net;padTop=false;aiTip={t:1,s:net?'底板托底':'落地弹跳'};return 0;
+  /* catchBad 最贵：约 12Hz 节流；topPlan 较轻且时机紧，仍每帧判断 */
+  if(ball.vy>0&&tc>.15&&ball.y<sy(ball.x)-R-30){
+    aiThinkT-=dt;
+    if(aiThinkT<=0){
+      aiThinkT=AI_THINK;
+      const xl=tgt-pad.aim;
+      if(trapNear(xl)){                                          // 方案三：落点旁有障碍、接住是死路，而落地弹跳能过去 → 木板让开
+        const gc=groundContact();
+        if(gc&&catchBad(xl,sy(xl)-R)&&groundHopClear(gc,ball.vx)){
+          const net=!edgeOk(gc.x,40);                           // 落地点靠近地块边缘时才放出底板托底
+          aiAvoid={x:xl-170,net,t:0};padBot=net;padTop=false;aiTip={t:1,s:net?'底板托底':'落地弹跳'};return 0;
+        }
+      }
     }
   }
   if(ball.vy<0){

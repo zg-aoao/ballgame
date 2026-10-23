@@ -1,0 +1,11 @@
+# 签名密钥与口令（切勿提交）
+signing/*.keystore
+signing/*.jks
+signing/*.cer
+signing/*.pem
+signing/credentials.txt
+signing/build.json
+signing/*secret*
+signing/*password*
+node_modules/
+platforms/
